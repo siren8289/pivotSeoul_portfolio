@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { Database, RefreshCw, CheckCircle2, AlertCircle, Clock, Upload, Download } from 'lucide-react';
 
 const datasets = [

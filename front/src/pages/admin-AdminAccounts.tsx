@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { Users, Shield, UserPlus, Search, MoreHorizontal, CheckCircle2, XCircle } from 'lucide-react';
 
 const accounts = [

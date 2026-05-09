@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { AlertOctagon, Filter, Download, RefreshCw, CheckCircle2, AlertTriangle, XCircle, Info } from 'lucide-react';
 
 const logData = [

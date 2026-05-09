@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { Activity, Clock, Server, Cpu, MemoryStick, Wifi } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,

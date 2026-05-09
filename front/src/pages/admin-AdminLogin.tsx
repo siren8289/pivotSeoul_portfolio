@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MapPin, Lock, User, Eye, EyeOff, AlertCircle, Shield } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 
 export function AdminLogin() {
   const navigate = useNavigate();

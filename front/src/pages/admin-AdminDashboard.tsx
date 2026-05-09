@@ -1,4 +1,4 @@
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   Users, Activity, BarChart3, AlertTriangle, TrendingUp,
   TrendingDown, MapPin, Zap, Baby, Sunset, ArrowUpRight

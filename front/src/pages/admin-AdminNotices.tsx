@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { BellRing, Plus, Edit2, Trash2, XCircle, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 
 const initialNotices = [

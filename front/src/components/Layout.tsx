@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { usePivot } from '../context/PivotContext';
-import { useIsMobile } from './ui/use-mobile';
+import { useIsMobile } from './ui-use-mobile';
 
 const navItems = [
   { icon: LayoutDashboard, label: '홈', path: '/', mobileLabel: '홈' },

@@ -12,13 +12,13 @@ import { Scenario } from './pages/Scenario';
 import { Results } from './pages/Results';
 
 // Admin pages
-import { AdminLogin } from './pages/admin/AdminLogin';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminMonitoring } from './pages/admin/AdminMonitoring';
-import { AdminDatasets } from './pages/admin/AdminDatasets';
-import { AdminNotices } from './pages/admin/AdminNotices';
-import { AdminLogs } from './pages/admin/AdminLogs';
-import { AdminAccounts } from './pages/admin/AdminAccounts';
+import { AdminLogin } from './pages/admin-AdminLogin';
+import { AdminDashboard } from './pages/admin-AdminDashboard';
+import { AdminMonitoring } from './pages/admin-AdminMonitoring';
+import { AdminDatasets } from './pages/admin-AdminDatasets';
+import { AdminNotices } from './pages/admin-AdminNotices';
+import { AdminLogs } from './pages/admin-AdminLogs';
+import { AdminAccounts } from './pages/admin-AdminAccounts';
 
 export const router = createBrowserRouter([
   // ── User layout ──
