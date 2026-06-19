@@ -34,3 +34,14 @@ venv/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+
+# Generated backend artifacts
+back/bin/
+
+# Local AI/FastAPI datasets. Keep manifests/docs in source, not raw bulk data.
+fastapi/lifePivot_/data/*
+!fastapi/lifePivot_/data/.gitkeep
+!fastapi/lifePivot_/data/README.md
+
+# Figma/imported image drops should be stored externally unless actively referenced.
+front/src/imports/

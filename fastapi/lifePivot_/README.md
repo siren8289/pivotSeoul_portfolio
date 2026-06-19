@@ -43,8 +43,8 @@ app/modules/{기능}/pipelines/*.py
 
 ## 6) Data
 
-- 원천 데이터: `data/` (평탄화)
-- 매핑: `data/MIGRATION_MAP.csv`
+- 원천 데이터: `data/` 에 로컬 배치
+- 대용량 원본·변환 파일과 매핑 CSV는 Git에 커밋하지 않고 외부 스토리지나 재생성 절차로 관리
 
 ## 7) Placeholders
 
