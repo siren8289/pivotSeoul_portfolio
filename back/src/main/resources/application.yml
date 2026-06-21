@@ -23,7 +23,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
-# Spring → FastAPI(lifePivot_) — domain/ai 게이트웨이가 ${pivotseoul.ai.fastapi-base-url}/api/v1/... 로 프록시
+# Spring → AI(FastAPI/lifePivot_) — domain/ai 게이트웨이가 ${pivotseoul.ai.fastapi-base-url}/api/v1/... 로 프록시
 pivotseoul:
   ai:
     fastapi-base-url: ${PIVOT_FASTAPI_BASE_URL:http://127.0.0.1:8000}

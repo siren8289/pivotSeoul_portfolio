@@ -25,7 +25,7 @@ back/.classpath
 back/.project
 back/.settings/
 
-# Python / FastAPI
+# Python / AI service
 __pycache__/
 *.py[cod]
 *$py.class
@@ -38,10 +38,10 @@ venv/
 # Generated backend artifacts
 back/bin/
 
-# Local AI/FastAPI datasets. Keep manifests/docs in source, not raw bulk data.
-fastapi/lifePivot_/data/*
-!fastapi/lifePivot_/data/.gitkeep
-!fastapi/lifePivot_/data/README.md
+# Local AI datasets. Keep manifests/docs in source, not raw bulk data.
+ai/lifePivot_/data/*
+!ai/lifePivot_/data/.gitkeep
+!ai/lifePivot_/data/README.md
 
 # Figma/imported image drops should be stored externally unless actively referenced.
 front/src/imports/

@@ -123,7 +123,7 @@ public class AiGatewayService {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("role", "gateway");
         m.put("fastapiBaseUrl", fastApiBaseUrl);
-        m.put("pipelines", "fastapi/lifePivot_/app/modules/*/pipelines");
+        m.put("pipelines", "ai/lifePivot_/app/modules/*/pipelines");
 
         try {
             ResponseEntity<String> health = aiRestTemplate.getForEntity(

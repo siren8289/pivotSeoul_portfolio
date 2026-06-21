@@ -5,11 +5,7 @@
 .idea
 
 front
-fastapi
-app
 ai
-docs
-deploy
 
 **/node_modules
 **/.next
@@ -25,4 +21,3 @@ back/bin
 *.env.local
 .DS_Store
 *.iml
-pivotSeoul.code-workspace

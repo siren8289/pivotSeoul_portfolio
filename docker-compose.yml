@@ -17,11 +17,11 @@ services:
     networks:
       - internal
 
-  fastapi:
-    image: ${FASTAPI_IMAGE:-ghcr.io/bigdata-seoul/pivotseoul-fastapi:latest}
+  ai:
+    image: ${AI_IMAGE:-ghcr.io/bigdata-seoul/pivotseoul-ai:latest}
     build:
-      context: ./fastapi
-    container_name: pivotseoul-fastapi
+      context: ./ai
+    container_name: pivotseoul-ai
     restart: unless-stopped
     env_file: .env
     environment:
@@ -44,14 +44,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      fastapi:
+      ai:
         condition: service_started
     env_file: .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-pivotseoul}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-pivotseoul}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      PIVOT_FASTAPI_BASE_URL: http://fastapi:8000
+      PIVOT_FASTAPI_BASE_URL: http://ai:8000
       PIVOT_CORS_ORIGINS: ${PIVOT_CORS_ORIGINS:-http://localhost:3000}
     networks:
       - internal

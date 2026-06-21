@@ -13,7 +13,7 @@ app/modules/{기능}/pipelines/*.py
 
 ## 2) Entry points
 
-- `fastapi/main.py` — 배포 시 `uvicorn main:app` (WORKDIR가 `fastapi`일 때)
+- `ai/main.py` — 배포 시 `uvicorn main:app` (WORKDIR가 `ai`일 때)
 - `lifePivot_/main.py` — 레거시 호환 (`lifePivot_.main:app`)
 - `lifePivot_/app/main.py` — 실제 FastAPI 앱·미들웨어·`/health`
 - `lifePivot_/app/api/v1/router.py` — 기능 라우터 등록
