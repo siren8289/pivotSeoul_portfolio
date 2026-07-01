@@ -1,44 +1,29 @@
 package com.pivotseoul.domain.ai.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.pivotseoul.domain.ai.application.port.out.FastApiClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * FastAPI(lifePivot_) 기능 모듈로 HTTP 프록시.
- * Spring은 요청 검증·응답 표준화·영속성 경계를 유지하고,
- * 실제 계산은 FastAPI 업스트림에 위임한다.
+ * FastAPI 게이트웨이의 비즈니스 플로우를 담당하는 서비스입니다.
+ * 컨트롤러는 HTTP 요청을 그대로 위임하고, 서비스는 경로 매핑과 외부 호출을 조합합니다.
  */
 @Service
 public class AiGatewayService {
 
     private static final String API_V1 = "/api/v1";
 
-    private final RestTemplate aiRestTemplate;
-    private final ObjectMapper objectMapper;
+    private final FastApiClient fastApiClient;
     private final String fastApiBaseUrl;
 
     public AiGatewayService(
-            @Qualifier("aiRestTemplate") RestTemplate aiRestTemplate,
-            ObjectMapper objectMapper,
+            FastApiClient fastApiClient,
             @Value("${pivotseoul.ai.fastapi-base-url:http://127.0.0.1:8000}") String fastApiBaseUrl) {
-        this.aiRestTemplate = aiRestTemplate;
-        this.objectMapper = objectMapper;
+        this.fastApiClient = fastApiClient;
         this.fastApiBaseUrl = trimTrailingSlash(fastApiBaseUrl);
     }
 
@@ -46,99 +31,21 @@ public class AiGatewayService {
         if (url == null || url.isEmpty()) {
             return "http://127.0.0.1:8000";
         }
-
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
-    /** FastAPI 기본 URL과 `/api/v1/...` 경로를 결합합니다. */
-    private String url(String pathStartingWithSlash) {
-        return fastApiBaseUrl + pathStartingWithSlash;
-    }
-
-    /**
-     * POST 프록시 공통 처리.
-     * 프론트가 보낸 JSON 본문을 Spring에서 재해석하지 않고 FastAPI로 전달합니다.
-     */
     public ResponseEntity<JsonNode> postJson(String fastApiPath, JsonNode body) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        JsonNode payload = body != null ? body : objectMapper.createObjectNode();
-        HttpEntity<JsonNode> entity = new HttpEntity<>(payload, headers);
-
-        try {
-            return aiRestTemplate.exchange(
-                    url(fastApiPath),
-                    HttpMethod.POST,
-                    entity,
-                    JsonNode.class);
-        } catch (HttpStatusCodeException e) {
-            return upstreamError(e);
-        } catch (ResourceAccessException e) {
-            return unreachable(e);
-        }
+        return fastApiClient.post(fastApiPath, body);
     }
 
-    /** GET 프록시 공통 처리. 상태 조회/데이터 소스 조회처럼 본문이 없는 호출에 사용합니다. */
     public ResponseEntity<JsonNode> getJson(String fastApiPath) {
-        try {
-            return aiRestTemplate.exchange(
-                    url(fastApiPath),
-                    HttpMethod.GET,
-                    null,
-                    JsonNode.class);
-        } catch (HttpStatusCodeException e) {
-            return upstreamError(e);
-        } catch (ResourceAccessException e) {
-            return unreachable(e);
-        }
+        return fastApiClient.get(fastApiPath);
     }
 
-    /**
-     * FastAPI가 내려가 있어도 Spring 자체는 503 JSON을 반환해 프론트에서 원인을 볼 수 있게 합니다.
-     */
-    private ResponseEntity<JsonNode> unreachable(ResourceAccessException e) {
-        ObjectNode err = objectMapper.createObjectNode();
-        err.put("error", "FASTAPI_UNREACHABLE");
-        err.put("detail", e.getMessage());
-        err.put("upstream", fastApiBaseUrl);
-
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(err);
-    }
-
-    private ResponseEntity<JsonNode> upstreamError(HttpStatusCodeException e) {
-        ObjectNode err = objectMapper.createObjectNode();
-        err.put("error", "FASTAPI_ERROR");
-        err.put("status", e.getStatusCode().value());
-        err.put("detail", e.getResponseBodyAsString());
-        err.put("upstream", fastApiBaseUrl);
-
-        return ResponseEntity.status(e.getStatusCode()).body(err);
-    }
-
-    /**
-     * Gateway 상태와 FastAPI health 상태를 확인한다.
-     */
     public Map<String, Object> bridgeStatus() {
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("role", "gateway");
-        m.put("fastapiBaseUrl", fastApiBaseUrl);
-        m.put("pipelines", "ai/lifePivot_/app/modules/*/pipelines");
-
-        try {
-            ResponseEntity<String> health = aiRestTemplate.getForEntity(
-                    url("/health"),
-                    String.class);
-            m.put("fastapiHealthHttpStatus", health.getStatusCode().value());
-        } catch (Exception e) {
-            m.put("fastapiHealthHttpStatus", "down");
-            m.put("fastapiHealthError", e.getMessage());
-        }
-
-        return m;
+        return fastApiClient.bridgeStatus(fastApiBaseUrl);
     }
 
-    // 기능별 메서드는 "Spring 경로 ↔ FastAPI 경로" 매핑을 코드에서 명시하기 위한 얇은 래퍼입니다.
     public ResponseEntity<JsonNode> housingAnalyze(JsonNode body) {
         return postJson(API_V1 + "/housing/analyze", body);
     }

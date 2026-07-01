@@ -15,6 +15,10 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * 관리자 대시보드에서 필요한 집계·상태값을 조합하는 애플리케이션 서비스입니다.
+ * 비즈니스 로직은 이 계층에서 처리하고, 컨트롤러는 그 결과를 단순히 전달합니다.
+ */
 @Service
 public class AdminDashboardService {
 
@@ -38,36 +42,35 @@ public class AdminDashboardService {
     }
 
     public AdminDashboardResponse getDashboard() {
+        DashboardData dashboardData = loadDashboardData();
+        AdminSummaryResponse summary = buildSummary(dashboardData.results(), dashboardData.validationResults());
+        AdminDashboardResponse.DataOperationStatus dataOperationStatus = buildDataOperationStatus(
+                dashboardData.datasets(),
+                dashboardData.validationResults());
+
         return new AdminDashboardResponse(
-                getSummary(),
-                getServiceStatuses(),
+                summary,
+                getServiceStatuses(dataOperationStatus),
                 getAiStatuses(),
-                getDataOperationStatus(),
+                dataOperationStatus,
                 getPromptRecommendationStatus()
         );
     }
 
     public AdminSummaryResponse getSummary() {
-        List<ScenarioResult> results = scenarioResultRepository.findAll();
-        double averageRiskScore = results.stream()
-                .map(ScenarioResult::getRiskScore)
-                .filter(score -> score != null)
-                .mapToDouble(BigDecimal::doubleValue)
-                .average()
-                .orElse(0);
-        return new AdminSummaryResponse(
-                0,
-                results.size(),
-                round(averageRiskScore),
-                resolveErrorRate(dataValidationService.getValidationResults())
-        );
+        DashboardData dashboardData = loadDashboardData();
+        return buildSummary(dashboardData.results(), dashboardData.validationResults());
     }
 
     public List<AdminDashboardResponse.ServiceMetric> getServiceStatuses() {
+        return getServiceStatuses(getDataOperationStatus());
+    }
+
+    private List<AdminDashboardResponse.ServiceMetric> getServiceStatuses(AdminDashboardResponse.DataOperationStatus dataOperationStatus) {
         return List.of(
                 new AdminDashboardResponse.ServiceMetric("api", "Spring API", 48, "ms", STATUS_NORMAL, 200),
                 new AdminDashboardResponse.ServiceMetric("simulation", "결과 조회", 34, "%", STATUS_NORMAL, 100),
-                new AdminDashboardResponse.ServiceMetric("data", "데이터 운영", 1, "건", getDataOperationStatus().status(), 5)
+                new AdminDashboardResponse.ServiceMetric("data", "데이터 운영", 1, "건", dataOperationStatus.status(), 5)
         );
     }
 
@@ -80,17 +83,8 @@ public class AdminDashboardService {
     }
 
     public AdminDashboardResponse.DataOperationStatus getDataOperationStatus() {
-        List<DatasetResponse> datasets = dataSourceService.getDatasetStatuses();
-        long warningCount = dataValidationService.getValidationResults().stream()
-                .filter(result -> VALIDATION_LEVEL_WARN.equals(result.level()) || VALIDATION_LEVEL_ERROR.equals(result.level()))
-                .count();
-        String status = warningCount == 0 ? STATUS_NORMAL : STATUS_WARNING;
-        return new AdminDashboardResponse.DataOperationStatus(
-                status,
-                datasets.size(),
-                warningCount,
-                Instant.now().toString()
-        );
+        DashboardData dashboardData = loadDashboardData();
+        return buildDataOperationStatus(dashboardData.datasets(), dashboardData.validationResults());
     }
 
     public AdminDashboardResponse.PromptRecommendationStatus getPromptRecommendationStatus() {
@@ -100,6 +94,54 @@ public class AdminDashboardService {
                 "v1.0-placeholder",
                 Instant.now().toString()
         );
+    }
+
+    private DashboardData loadDashboardData() {
+        List<ScenarioResult> results = scenarioResultRepository.findAll();
+        List<ValidationResultResponse> validationResults = dataValidationService.getValidationResults();
+        List<DatasetResponse> datasets = dataSourceService.getDatasetStatuses();
+        return new DashboardData(results, validationResults, datasets);
+    }
+
+    private AdminSummaryResponse buildSummary(
+            List<ScenarioResult> results,
+            List<ValidationResultResponse> validationResults) {
+        double averageRiskScore = calculateAverageRiskScore(results);
+        return new AdminSummaryResponse(
+                0,
+                results.size(),
+                round(averageRiskScore),
+                resolveErrorRate(validationResults)
+        );
+    }
+
+    private AdminDashboardResponse.DataOperationStatus buildDataOperationStatus(
+            List<DatasetResponse> datasets,
+            List<ValidationResultResponse> validationResults) {
+        long warningCount = countWarnings(validationResults);
+        String status = warningCount == 0 ? STATUS_NORMAL : STATUS_WARNING;
+
+        return new AdminDashboardResponse.DataOperationStatus(
+                status,
+                datasets.size(),
+                warningCount,
+                Instant.now().toString()
+        );
+    }
+
+    private double calculateAverageRiskScore(List<ScenarioResult> results) {
+        return results.stream()
+                .map(ScenarioResult::getRiskScore)
+                .filter(score -> score != null)
+                .mapToDouble(BigDecimal::doubleValue)
+                .average()
+                .orElse(0);
+    }
+
+    private long countWarnings(List<ValidationResultResponse> validationResults) {
+        return validationResults.stream()
+                .filter(result -> VALIDATION_LEVEL_WARN.equals(result.level()) || VALIDATION_LEVEL_ERROR.equals(result.level()))
+                .count();
     }
 
     private double resolveErrorRate(List<ValidationResultResponse> validationResults) {
@@ -114,5 +156,11 @@ public class AdminDashboardService {
 
     private double round(double value) {
         return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    private record DashboardData(
+            List<ScenarioResult> results,
+            List<ValidationResultResponse> validationResults,
+            List<DatasetResponse> datasets) {
     }
 }

@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 관리자 대시보드의 HTTP 진입점입니다.
+ * 컨트롤러는 요청을 받아 서비스에 위임하고, 응답 DTO를 그대로 반환하는 역할만 담당합니다.
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class AdminDashboardController {
